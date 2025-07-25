@@ -2,6 +2,7 @@ import Cocoa
 
 class PreferencesWindow: NSWindowController {
     private var screenshotPathField: NSTextField!
+    private var downloadPathField: NSTextField!
     private var adbPathField: NSTextField!
     private var autoConnectCheckbox: NSButton!
     
@@ -16,7 +17,7 @@ class PreferencesWindow: NSWindowController {
     
     private func setupWindow() {
         let newWindow = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 500, height: 320),
+            contentRect: NSRect(x: 0, y: 0, width: 500, height: 380),
             styleMask: [.titled, .closable, .miniaturizable],
             backing: .buffered,
             defer: false
@@ -64,6 +65,24 @@ class PreferencesWindow: NSWindowController {
         browseButton.target = self
         browseButton.action = #selector(browseForDirectory)
         contentView.addSubview(browseButton)
+        
+        yPosition -= 30
+        
+        // Download Directory
+        let downloadPathLabel = createLabel(text: "Download Directory:")
+        downloadPathLabel.frame = NSRect(x: 40, y: yPosition, width: 150, height: 20)
+        contentView.addSubview(downloadPathLabel)
+        
+        downloadPathField = NSTextField(frame: NSRect(x: 200, y: yPosition, width: 200, height: 22))
+        downloadPathField.placeholderString = "~/Downloads"
+        contentView.addSubview(downloadPathField)
+        
+        let downloadBrowseButton = NSButton(frame: NSRect(x: 410, y: yPosition, width: 70, height: 22))
+        downloadBrowseButton.title = "Browse..."
+        downloadBrowseButton.bezelStyle = NSButton.BezelStyle.rounded
+        downloadBrowseButton.target = self
+        downloadBrowseButton.action = #selector(browseForDownloadDirectory)
+        contentView.addSubview(downloadBrowseButton)
         
         yPosition -= 50
         
@@ -133,6 +152,7 @@ class PreferencesWindow: NSWindowController {
     private func loadPreferences() {
         let prefs = Preferences.shared
         screenshotPathField.stringValue = prefs.screenshotDirectory
+        downloadPathField.stringValue = prefs.downloadDirectory
         adbPathField.stringValue = prefs.adbPath
         autoConnectCheckbox.state = prefs.autoConnect ? .on : .off
     }
@@ -148,6 +168,21 @@ class PreferencesWindow: NSWindowController {
         openPanel.beginSheetModal(for: window!) { [weak self] response in
             if response == .OK, let url = openPanel.url {
                 self?.screenshotPathField.stringValue = url.path
+            }
+        }
+    }
+    
+    @objc private func browseForDownloadDirectory() {
+        let openPanel = NSOpenPanel()
+        openPanel.canChooseDirectories = true
+        openPanel.canChooseFiles = false
+        openPanel.canCreateDirectories = true
+        openPanel.prompt = "Select"
+        openPanel.message = "Select directory for downloads"
+        
+        openPanel.beginSheetModal(for: window!) { [weak self] response in
+            if response == .OK, let url = openPanel.url {
+                self?.downloadPathField.stringValue = url.path
             }
         }
     }
@@ -186,6 +221,23 @@ class PreferencesWindow: NSWindowController {
                 }
             }
             prefs.screenshotDirectory = expandedPath
+        }
+        
+        // Validate and create download directory if needed
+        let downloadPath = downloadPathField.stringValue
+        if !downloadPath.isEmpty {
+            let expandedDownloadPath = NSString(string: downloadPath).expandingTildeInPath
+            let fileManager = FileManager.default
+            
+            if !fileManager.fileExists(atPath: expandedDownloadPath) {
+                do {
+                    try fileManager.createDirectory(atPath: expandedDownloadPath, withIntermediateDirectories: true, attributes: nil)
+                } catch {
+                    showAlert(title: "Error", message: "Could not create download directory: \(error.localizedDescription)")
+                    return
+                }
+            }
+            prefs.downloadDirectory = expandedDownloadPath
         }
         
         // Validate ADB path

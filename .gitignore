@@ -95,3 +95,4 @@ Android Device Manager.app/
 Screenshots/
 logs/
 *.log
+create_clean_dmg.sh

@@ -26,7 +26,7 @@ class ShellSessionManager {
     
     // MARK: - Session Management
     
-    func getOrCreateSession(for deviceId: String) -> ShellSession? {
+    func getOrCreateSession(for deviceId: String, requestRoot: Bool = true) -> ShellSession? {
         // Read existing session
         var existingSession: ShellSession?
         sessionQueue.sync {
@@ -46,7 +46,7 @@ class ShellSessionManager {
             }
             
             // Create new session
-            let session = ShellSession(deviceId: deviceId, adbPath: adbPath)
+            let session = ShellSession(deviceId: deviceId, adbPath: adbPath, requestRoot: requestRoot)
             do {
                 try session.start()
                 sessions[deviceId] = session

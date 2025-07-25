@@ -29,12 +29,13 @@ class ADBClient {
         return processRunner.run(command: adbPath, arguments: fullArgs)
     }
     
-    func shell(command: String, deviceId: String? = nil, persistent: Bool = false) -> CommandResult {
+    func shell(command: String, deviceId: String? = nil, persistent: Bool = false, timeout: TimeInterval = 5.0) -> CommandResult {
         if persistent, let deviceId = deviceId {
             // Use persistent session
             return ShellSessionManager.shared.executeCommand(
                 deviceId: deviceId,
-                command: command
+                command: command,
+                timeout: timeout
             )
         } else {
             // Use traditional one-shot execution

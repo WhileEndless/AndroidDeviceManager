@@ -4,7 +4,7 @@ class DeviceManager: ObservableObject {
     @Published private(set) var devices: [Device] = []
     @Published private(set) var activeDevice: Device?
     
-    private let adbClient: ADBClient
+    let adbClient: ADBClient
     
     init() {
         self.adbClient = ADBClient()

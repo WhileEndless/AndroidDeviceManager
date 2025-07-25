@@ -1,7 +1,7 @@
 # Development Roadmap
 ## Android Device Manager for macOS
 
-### Project Status: v1.0.1 Released
+### Project Status: v1.1.0 Released
 
 ## Completed Features
 
@@ -24,7 +24,7 @@
 - One-click screenshot capture
 - Auto-open in default editor
 - Organized storage with timestamps
-- Clipboard content transfer (macOS ’ Android)
+- Clipboard content transfer (macOS ï¿½ Android)
 - Unicode and special character support
 
 ### Shell & Terminal 
@@ -35,8 +35,8 @@
 - DMG compatibility fixes
 
 ### Port Forwarding 
-- Forward port forwarding (Local ’ Device)
-- Reverse port forwarding (Device ’ Local)
+- Forward port forwarding (Local ï¿½ Device)
+- Reverse port forwarding (Device ï¿½ Local)
 - Persistent configurations
 - Automatic port 8080 setup on startup
 - Port conflict detection
@@ -66,41 +66,42 @@
 - Keyboard shortcuts
 - System notifications
 
-## Future Enhancements (v1.1+)
+### File Manager 
+- Full filesystem navigation with root support
+- Drag & drop file upload with progress tracking
+- Multiple file download with batch operations
+- File operations: rename, delete, download
+- Real-time search and filtering
+- SQLite database file integration
+- Context menu with dynamic actions
+- Column sorting and resizing
+- Navigation history (back/forward)
+- Symlink support
 
-### Performance & Stability
-- [ ] Automatic crash reporting
-- [ ] Performance metrics dashboard
-- [ ] Memory usage optimization
-- [ ] Background task management
+## Future Enhancements (v1.2+)
 
 ### Enhanced Features
-- [ ] Multiple device simultaneous operations
-- [ ] Batch screenshot capture
-- [ ] Advanced logcat search with regex
-- [ ] Custom shell command templates
-- [ ] Port forwarding profiles
-
-### Integration
-- [ ] Android Studio plugin
-- [ ] VS Code extension
-- [ ] Command-line interface (CLI)
-- [ ] REST API for automation
-
-### Security
-- [ ] Encrypted preference storage
-- [ ] Secure credential management
-- [ ] Device authorization automation
-- [ ] Network security scanning
+- [ ] WiFi ADB connection management
+- [ ] Device screen recording
+- [ ] App management (install/uninstall/backup)
 
 ### UI/UX Improvements
 - [ ] Dark mode enhancements
-- [ ] Customizable menu bar icon
-- [ ] Floating window mode
-- [ ] Touch Bar support (older MacBooks)
-- [ ] Accessibility improvements
+- [ ] Customizable keyboard shortcuts
+- [ ] Window position memory
 
 ## Release History
+
+### v1.1.0 (2025-01-25)
+- Added comprehensive File Manager with root support
+- Implemented drag & drop file upload with progress tracking
+- Added context menu with file operations (rename, delete, download)
+- SQLite database file integration with Terminal
+- Real-time search and column sorting
+- Navigation history with back/forward buttons
+- Configurable download directory preference
+- Fixed root file download issues
+- Performance optimizations for file operations
 
 ### v1.0.1 (2025-01-25)
 - Added persistent shell sessions

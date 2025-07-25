@@ -9,6 +9,7 @@ class ShellSession {
     
     private(set) var isRoot = false
     private(set) var isAlive = false
+    private let requestRoot: Bool
     
     private let commandQueue = DispatchQueue(label: "shellSession.\(UUID().uuidString)")
     private var outputBuffer = ""
@@ -26,9 +27,10 @@ class ShellSession {
     
     private let adbPath: String
     
-    init(deviceId: String, adbPath: String = "/usr/local/bin/adb") {
+    init(deviceId: String, adbPath: String = "/usr/local/bin/adb", requestRoot: Bool = true) {
         self.deviceId = deviceId
         self.adbPath = adbPath
+        self.requestRoot = requestRoot
     }
     
     deinit {
@@ -69,13 +71,15 @@ class ShellSession {
         isAlive = true
         
         // Wait for initial prompt
-        Thread.sleep(forTimeInterval: 0.5)
+        Thread.sleep(forTimeInterval: 0.1)
         
         // Clear any initial output
         clearOutputBuffer()
         
-        // Check and escalate to root if available
-        checkAndEscalateRoot()
+        // Check and escalate to root if requested
+        if requestRoot {
+            checkAndEscalateRoot()
+        }
     }
     
     func close() {
@@ -126,11 +130,11 @@ class ShellSession {
                 outputLock.unlock()
                 
                 // Check if we have a prompt indicating command completion
-                if containsPrompt(output) {
+                if containsPrompt(output) || output.contains("__EOF__") {
                     break
                 }
                 
-                Thread.sleep(forTimeInterval: 0.05)
+                Thread.sleep(forTimeInterval: 0.01) // Reduced from 50ms to 10ms
             }
             
             // Clean output
@@ -143,18 +147,11 @@ class ShellSession {
     // MARK: - Root Management
     
     private func checkAndEscalateRoot() {
-        // First check if we already have root
-        let idResult = executeCommand("id", timeout: 2.0)
-        if idResult.output.contains("uid=0") {
-            isRoot = true
-            return
-        }
-        
-        // Try to get root
-        let suResult = executeCommand("su -c id", timeout: 2.0)
-        if suResult.output.contains("uid=0") {
-            // We can get root, escalate
-            _ = executeCommand("su", timeout: 2.0)
+        // Quick root check without multiple attempts
+        let result = executeCommand("su -c 'echo ROOT_OK'", timeout: 1.0)
+        if result.output.contains("ROOT_OK") {
+            // We have root, escalate to su shell
+            _ = executeCommand("su", timeout: 0.5)
             isRoot = true
         }
     }
@@ -206,6 +203,9 @@ class ShellSession {
                 }
             }
         }
+        
+        // Remove EOF marker if present
+        lines = lines.filter { $0 != "__EOF__" }
         
         return lines.joined(separator: "\n")
     }

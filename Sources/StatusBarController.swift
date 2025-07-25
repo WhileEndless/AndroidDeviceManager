@@ -12,6 +12,7 @@ class StatusBarController {
     private var logcatViewerWindow: LogcatViewerWindow?
     private var deviceInfoWindow: DeviceInfoWindow?
     private var aboutWindow: AboutWindow?
+    private var fileManagerWindow: FileManagerWindow?
     
     init() {
         statusBar = NSStatusBar.system
@@ -166,6 +167,7 @@ class StatusBarController {
         menu.addItem(shellItem)
         
         // Direct menu items
+        menu.addItem(createMenuItem(title: "📁 File Manager...", action: #selector(showFileManager), keyEquivalent: "f", enabled: hasActiveDevice))
         menu.addItem(createMenuItem(title: "🔀 Port Forwarding...", action: #selector(showPortForwarding), keyEquivalent: "", enabled: hasActiveDevice))
         
         // Frida requires root
@@ -339,6 +341,18 @@ class StatusBarController {
         quickCommandsWindow = QuickCommandsWindow(device: device)
         quickCommandsWindow?.showWindow(nil)
         quickCommandsWindow?.window?.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+    
+    @objc private func showFileManager() {
+        guard let device = deviceManager.activeDevice else {
+            showNotification(title: "Error", message: "No active device")
+            return
+        }
+        
+        fileManagerWindow = FileManagerWindow(device: device, adbClient: ADBClient())
+        fileManagerWindow?.showWindow(nil)
+        fileManagerWindow?.window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
     
