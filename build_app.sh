@@ -11,7 +11,7 @@ NC='\033[0m' # No Color
 
 APP_NAME="Android Device Manager"
 BUNDLE_ID="com.androiddevicemanager.macos"
-VERSION="1.1.0"
+VERSION="1.2.1"
 
 echo -e "${GREEN}=== Building $APP_NAME v$VERSION ===${NC}"
 

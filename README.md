@@ -5,7 +5,7 @@ A powerful macOS menu bar application for managing Android devices via ADB (Andr
 [🇹🇷 Türkçe](README_TR.md)
 
 ## Version
-**Current Version:** 1.1.0
+**Current Version:** 1.2.1
 
 ## Features
 
@@ -59,6 +59,7 @@ A powerful macOS menu bar application for managing Android devices via ADB (Andr
 - 📊 **Column Sorting**: Sort by name, size, or modification date
 - 🔙 **Navigation History**: Back/Forward buttons for easy navigation
 - 🔗 **Symlink Support**: Seamless navigation through symbolic links
+- 🖥️ **Open in Terminal**: Launch ADB shell in current directory with one click
 
 ### User Interface
 - 🎨 Clean, native macOS interface
@@ -97,6 +98,7 @@ swift build -c release
 - **Cmd+S**: Take Screenshot
 - **Cmd+V**: Send Clipboard to Device
 - **Cmd+T**: Open Terminal
+- **Cmd+F**: Open File Manager
 - **Cmd+R**: Refresh Devices
 - **Cmd+,**: Open Preferences
 - **Cmd+Q**: Quit

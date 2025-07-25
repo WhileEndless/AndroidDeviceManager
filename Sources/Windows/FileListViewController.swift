@@ -42,6 +42,7 @@ class FileListViewController: NSViewController {
     private let upButton = NSButton()
     private let homeButton = NSButton()
     private let refreshButton = NSButton()
+    private let terminalButton = NSButton()
     private let searchField = NSSearchField()
     
     // MARK: - Init
@@ -125,7 +126,13 @@ class FileListViewController: NSViewController {
         
         // Action buttons
         setupButton(refreshButton, title: "🔄", action: #selector(refresh))
+        refreshButton.toolTip = "Refresh"
+        
+        setupButton(terminalButton, title: "🖥️", action: #selector(openInTerminal))
+        terminalButton.toolTip = "Open in Terminal"
+        
         toolbar.addSubview(refreshButton)
+        toolbar.addSubview(terminalButton)
         
         // Progress indicator
         progressIndicator.style = .spinning
@@ -242,11 +249,15 @@ class FileListViewController: NSViewController {
             pathLabel.centerYAnchor.constraint(equalTo: toolbar.centerYAnchor),
             
             // Search field
-            searchField.trailingAnchor.constraint(equalTo: refreshButton.leadingAnchor, constant: -10),
+            searchField.trailingAnchor.constraint(equalTo: terminalButton.leadingAnchor, constant: -10),
             searchField.centerYAnchor.constraint(equalTo: toolbar.centerYAnchor),
             searchField.widthAnchor.constraint(equalToConstant: 200),
             
             // Action buttons
+            terminalButton.trailingAnchor.constraint(equalTo: refreshButton.leadingAnchor, constant: -5),
+            terminalButton.centerYAnchor.constraint(equalTo: toolbar.centerYAnchor),
+            terminalButton.widthAnchor.constraint(equalToConstant: 30),
+            
             refreshButton.trailingAnchor.constraint(equalTo: toolbar.trailingAnchor),
             refreshButton.centerYAnchor.constraint(equalTo: toolbar.centerYAnchor),
             refreshButton.widthAnchor.constraint(equalToConstant: 30),
@@ -316,6 +327,56 @@ class FileListViewController: NSViewController {
         loadDirectory(currentPath)
     }
     
+    @objc private func openInTerminal() {
+        // Prepare the AppleScript command
+        let appleScriptCommand: String
+        
+        if hasRoot {
+            // For root: open shell and show instructions
+            appleScriptCommand = """
+            tell application "Terminal"
+                activate
+                set newTab to do script "adb -s \(device.deviceId) shell"
+                delay 0.5
+                do script "su" in newTab
+                delay 0.5
+                do script "cd '\(currentPath)'" in newTab
+            end tell
+            """
+        } else {
+            // For non-root: just open shell and cd
+            appleScriptCommand = """
+            tell application "Terminal"
+                activate
+                set newTab to do script "adb -s \(device.deviceId) shell"
+                delay 0.5
+                do script "cd '\(currentPath)'" in newTab
+            end tell
+            """
+        }
+        
+        if let appleScript = NSAppleScript(source: appleScriptCommand) {
+            var error: NSDictionary?
+            appleScript.executeAndReturnError(&error)
+            
+            if let error = error {
+                print("Error opening terminal: \(error)")
+                
+                // Fallback: just open a simple shell
+                let fallbackScript = """
+                tell application "Terminal"
+                    activate
+                    do script "adb -s \(device.deviceId) shell"
+                end tell
+                """
+                
+                if let fallback = NSAppleScript(source: fallbackScript) {
+                    fallback.executeAndReturnError(nil)
+                }
+            }
+        }
+    }
+    
     @objc private func searchFieldDidChange(_ sender: NSSearchField) {
         searchText = sender.stringValue
         filterAndSortItems()
@@ -361,7 +422,7 @@ class FileListViewController: NSViewController {
         progressIndicator.startAnimation(nil)
         
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            guard let self = self else { return }
+            guard let strongSelf = self else { return }
             
             let startTime = Date()
             
@@ -371,17 +432,17 @@ class FileListViewController: NSViewController {
             print("[FileManager] Executing command: \(command)")
             
             let result: CommandResult
-            if self.needsRoot(path) && self.hasRoot {
+            if strongSelf.needsRoot(path) && strongSelf.hasRoot {
                 // Use root session for directories that need it
-                result = self.adbClient.shellAsRoot(
+                result = strongSelf.adbClient.shellAsRoot(
                     command: command,
-                    deviceId: self.device.deviceId,
+                    deviceId: strongSelf.device.deviceId,
                     timeout: 2.0
                 )
             } else {
-                result = self.adbClient.shell(
+                result = strongSelf.adbClient.shell(
                     command: command,
-                    deviceId: self.device.deviceId,
+                    deviceId: strongSelf.device.deviceId,
                     persistent: true,
                     timeout: 2.0
                 )
@@ -391,30 +452,30 @@ class FileListViewController: NSViewController {
             print("[FileManager] Command completed in \(String(format: "%.2f", elapsed))s")
             
             DispatchQueue.main.async {
-                self.progressIndicator.stopAnimation(nil)
+                strongSelf.progressIndicator.stopAnimation(nil)
                 
                 if result.isSuccess {
-                    self.currentPath = path
-                    self.pathLabel.stringValue = path
-                    self.items = LSParser.parse(output: result.output, currentPath: path)
+                    strongSelf.currentPath = path
+                    strongSelf.pathLabel.stringValue = path
+                    strongSelf.items = LSParser.parse(output: result.output, currentPath: path)
                     // Clear search when directory changes
-                    self.searchField.stringValue = ""
-                    self.searchText = ""
-                    self.filterAndSortItems()
-                    self.tableView.reloadData()
-                    self.updateStatus()
+                    strongSelf.searchField.stringValue = ""
+                    strongSelf.searchText = ""
+                    strongSelf.filterAndSortItems()
+                    strongSelf.tableView.reloadData()
+                    strongSelf.updateStatus()
                     
                     // Add to navigation history
                     if addToHistory {
-                        self.addToNavigationHistory(path)
+                        strongSelf.addToNavigationHistory(path)
                     }
-                    self.updateNavigationButtons()
-                    self.updateUpButton()
+                    strongSelf.updateNavigationButtons()
+                    strongSelf.updateUpButton()
                 } else {
                     if let error = LSParser.parseError(result.output) {
-                        self.showError(error)
+                        strongSelf.showError(error)
                     } else {
-                        self.showError("Failed to load directory")
+                        strongSelf.showError("Failed to load directory")
                     }
                 }
             }
@@ -576,7 +637,7 @@ class FileListViewController: NSViewController {
         progressIndicator.startAnimation(nil)
         
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            guard let self = self else { return }
+            guard let strongSelf = self else { return }
             
             var successCount = 0
             var failedFiles: [String] = []
@@ -585,7 +646,7 @@ class FileListViewController: NSViewController {
                 let localPath = (downloadDir as NSString).appendingPathComponent(item.name)
                 
                 // For files that might need root access, copy to temp location first
-                let needsRootCopy = self.needsRoot(item.fullPath) && self.hasRoot
+                let needsRootCopy = strongSelf.needsRoot(item.fullPath) && strongSelf.hasRoot
                 let remotePath: String
                 
                 if needsRootCopy {
@@ -594,9 +655,9 @@ class FileListViewController: NSViewController {
                     
                     // Ensure directory exists and copy file to accessible location using root
                     let copyCommand = "mkdir -p /sdcard/Download && cp '\(item.fullPath)' '\(tempPath)' && chmod 644 '\(tempPath)'"
-                    let copyResult = self.adbClient.shellAsRoot(
+                    let copyResult = strongSelf.adbClient.shellAsRoot(
                         command: copyCommand,
-                        deviceId: self.device.deviceId
+                        deviceId: strongSelf.device.deviceId
                     )
                     
                     if !copyResult.isSuccess {
@@ -610,17 +671,17 @@ class FileListViewController: NSViewController {
                 }
                 
                 // Now pull the file
-                let result = self.adbClient.pull(
+                let result = strongSelf.adbClient.pull(
                     remotePath: remotePath,
                     localPath: localPath,
-                    deviceId: self.device.deviceId
+                    deviceId: strongSelf.device.deviceId
                 )
                 
                 // Clean up temp file if we created one
                 if needsRootCopy {
-                    _ = self.adbClient.shell(
+                    _ = strongSelf.adbClient.shell(
                         command: "rm -f '\(remotePath)'",
-                        deviceId: self.device.deviceId
+                        deviceId: strongSelf.device.deviceId
                     )
                 }
                 
@@ -632,13 +693,13 @@ class FileListViewController: NSViewController {
             }
             
             DispatchQueue.main.async {
-                self.progressIndicator.stopAnimation(nil)
+                strongSelf.progressIndicator.stopAnimation(nil)
                 
                 if failedFiles.isEmpty {
                     // Open download directory in Finder
                     NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: downloadDir)
                 } else {
-                    self.showError("Failed to download \(failedFiles.count) files:\n\(failedFiles.joined(separator: "\n"))")
+                    strongSelf.showError("Failed to download \(failedFiles.count) files:\n\(failedFiles.joined(separator: "\n"))")
                 }
             }
         }
@@ -672,15 +733,15 @@ class FileListViewController: NSViewController {
         progressIndicator.startAnimation(nil)
         
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            guard let self = self else { return }
+            guard let strongSelf = self else { return }
             
             var failedItems: [String] = []
             
             for item in items {
                 let command = item.isDirectory ? "rm -rf '\(item.fullPath)'" : "rm -f '\(item.fullPath)'"
-                let result = self.adbClient.shell(
+                let result = strongSelf.adbClient.shell(
                     command: command,
-                    deviceId: self.device.deviceId,
+                    deviceId: strongSelf.device.deviceId,
                     persistent: true
                 )
                 
@@ -690,13 +751,13 @@ class FileListViewController: NSViewController {
             }
             
             DispatchQueue.main.async {
-                self.progressIndicator.stopAnimation(nil)
+                strongSelf.progressIndicator.stopAnimation(nil)
                 
                 if failedItems.isEmpty {
-                    self.refresh()
+                    strongSelf.refresh()
                 } else {
-                    self.showError("Failed to delete \(failedItems.count) items:\n\(failedItems.joined(separator: "\n"))")
-                    self.refresh() // Refresh anyway to show what was deleted
+                    strongSelf.showError("Failed to delete \(failedItems.count) items:\n\(failedItems.joined(separator: "\n"))")
+                    strongSelf.refresh() // Refresh anyway to show what was deleted
                 }
             }
         }
@@ -708,7 +769,7 @@ class FileListViewController: NSViewController {
         progressIndicator.startAnimation(nil)
         
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            guard let self = self else { return }
+            guard let strongSelf = self else { return }
             
             // Create temporary directory
             let tempDir = NSTemporaryDirectory().appending("AndroidDeviceManager/sqlite/")
@@ -718,14 +779,14 @@ class FileListViewController: NSViewController {
                 try FileManager.default.createDirectory(atPath: tempDir, withIntermediateDirectories: true, attributes: nil)
             } catch {
                 DispatchQueue.main.async {
-                    self.progressIndicator.stopAnimation(nil)
-                    self.showError("Failed to create temporary directory: \(error)")
+                    strongSelf.progressIndicator.stopAnimation(nil)
+                    strongSelf.showError("Failed to create temporary directory: \(error)")
                 }
                 return
             }
             
             // For files that might need root access, copy to temp location first
-            let needsRootCopy = self.needsRoot(item.fullPath) && self.hasRoot
+            let needsRootCopy = strongSelf.needsRoot(item.fullPath) && strongSelf.hasRoot
             let remotePath: String
             
             if needsRootCopy {
@@ -734,15 +795,15 @@ class FileListViewController: NSViewController {
                 
                 // Ensure directory exists and copy file to accessible location using root
                 let copyCommand = "mkdir -p /sdcard/Download && cp '\(item.fullPath)' '\(tempRemotePath)' && chmod 644 '\(tempRemotePath)'"
-                let copyResult = self.adbClient.shellAsRoot(
+                let copyResult = strongSelf.adbClient.shellAsRoot(
                     command: copyCommand,
-                    deviceId: self.device.deviceId
+                    deviceId: strongSelf.device.deviceId
                 )
                 
                 if !copyResult.isSuccess {
                     DispatchQueue.main.async {
-                        self.progressIndicator.stopAnimation(nil)
-                        self.showError("Failed to copy database file: \(copyResult.error)")
+                        strongSelf.progressIndicator.stopAnimation(nil)
+                        strongSelf.showError("Failed to copy database file: \(copyResult.error)")
                     }
                     return
                 }
@@ -753,22 +814,22 @@ class FileListViewController: NSViewController {
             }
             
             // Download the file
-            let result = self.adbClient.pull(
+            let result = strongSelf.adbClient.pull(
                 remotePath: remotePath,
                 localPath: tempFile,
-                deviceId: self.device.deviceId
+                deviceId: strongSelf.device.deviceId
             )
             
             // Clean up temp file if we created one
             if needsRootCopy {
-                _ = self.adbClient.shell(
+                _ = strongSelf.adbClient.shell(
                     command: "rm -f '\(remotePath)'",
-                    deviceId: self.device.deviceId
+                    deviceId: strongSelf.device.deviceId
                 )
             }
             
             DispatchQueue.main.async {
-                self.progressIndicator.stopAnimation(nil)
+                strongSelf.progressIndicator.stopAnimation(nil)
                 
                 if result.isSuccess {
                     // Open Terminal with sqlite3
@@ -784,11 +845,11 @@ class FileListViewController: NSViewController {
                         appleScript.executeAndReturnError(&error)
                         
                         if let error = error {
-                            self.showError("Failed to open Terminal: \(error)")
+                            strongSelf.showError("Failed to open Terminal: \(error)")
                         }
                     }
                 } else {
-                    self.showError("Failed to download database file: \(result.error)")
+                    strongSelf.showError("Failed to download database file: \(result.error)")
                 }
             }
         }
@@ -1035,7 +1096,7 @@ extension FileListViewController: NSTableViewDelegate {
         }
         
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            guard let self = self else { return }
+            guard let strongSelf = self else { return }
             
             var successCount = 0
             var failedFiles: [String] = []
@@ -1050,7 +1111,24 @@ extension FileListViewController: NSTableViewDelegate {
                 progressWindow.updateFileName("Uploading: \(fileName) (\(index + 1)/\(files.count))")
                 
                 // Get file size
-                let fileSize = self.getFileSize(at: fileURL)
+                let fileSize = strongSelf.getFileSize(at: fileURL)
+                
+                // Determine if we need to use root for upload
+                let needsRootUpload = strongSelf.needsRoot(remotePath) && strongSelf.hasRoot
+                let uploadPath: String
+                
+                if needsRootUpload {
+                    // Upload to temporary location first
+                    uploadPath = "/sdcard/Download/temp_upload_\(UUID().uuidString)_\(fileName)"
+                    
+                    // Ensure temp directory exists
+                    _ = strongSelf.adbClient.shell(
+                        command: "mkdir -p /sdcard/Download",
+                        deviceId: strongSelf.device.deviceId
+                    )
+                } else {
+                    uploadPath = remoteFilePath
+                }
                 
                 // Monitor upload progress
                 var lastProgressUpdate = Date()
@@ -1095,10 +1173,11 @@ extension FileListViewController: NSTableViewDelegate {
                 
                 monitorQueue.async {
                     while !monitorState.checkShouldStop() && !uploadCancelled {
-                        // Check remote file size
-                        let sizeResult = self.adbClient.shell(
-                            command: "stat -c%s '\(remoteFilePath)' 2>/dev/null || echo 0",
-                            deviceId: self.device.deviceId,
+                        // Check remote file size (use upload path, not final path)
+                        let pathToMonitor = uploadPath
+                        let sizeResult = strongSelf.adbClient.shell(
+                            command: "stat -c%s '\(pathToMonitor)' 2>/dev/null || echo 0",
+                            deviceId: strongSelf.device.deviceId,
                             persistent: true,
                             timeout: 1.0
                         )
@@ -1126,10 +1205,10 @@ extension FileListViewController: NSTableViewDelegate {
                 }
                 
                 // Perform the actual upload
-                let result = self.adbClient.push(
+                let result = strongSelf.adbClient.push(
                     localPath: fileURL.path,
-                    remotePath: remoteFilePath,
-                    deviceId: self.device.deviceId
+                    remotePath: uploadPath,
+                    deviceId: strongSelf.device.deviceId
                 )
                 
                 // Stop monitoring
@@ -1139,13 +1218,38 @@ extension FileListViewController: NSTableViewDelegate {
                 try? FileManager.default.removeItem(atPath: tempScriptPath)
                 
                 if result.isSuccess {
-                    successCount += 1
-                    // Set proper permissions if we have root
-                    if self.hasRoot && self.needsRoot(remotePath) {
-                        _ = self.adbClient.shellAsRoot(
-                            command: "chmod 644 '\(remoteFilePath)'",
-                            deviceId: self.device.deviceId
+                    // If we uploaded to temp location, move to final destination with root
+                    if needsRootUpload {
+                        let moveCommand = """
+                        mkdir -p '\((remoteFilePath as NSString).deletingLastPathComponent)' && \
+                        mv '\(uploadPath)' '\(remoteFilePath)' && \
+                        chmod 644 '\(remoteFilePath)'
+                        """
+                        
+                        let moveResult = strongSelf.adbClient.shellAsRoot(
+                            command: moveCommand,
+                            deviceId: strongSelf.device.deviceId
                         )
+                        
+                        // Clean up temp file if move failed
+                        if !moveResult.isSuccess {
+                            _ = strongSelf.adbClient.shell(
+                                command: "rm -f '\(uploadPath)'",
+                                deviceId: strongSelf.device.deviceId
+                            )
+                            failedFiles.append(fileName)
+                        } else {
+                            successCount += 1
+                        }
+                    } else {
+                        successCount += 1
+                        // Set permissions for non-root uploads if needed
+                        if strongSelf.hasRoot {
+                            _ = strongSelf.adbClient.shellAsRoot(
+                                command: "chmod 644 '\(remoteFilePath)'",
+                                deviceId: strongSelf.device.deviceId
+                            )
+                        }
                     }
                 } else {
                     failedFiles.append(fileName)
@@ -1158,10 +1262,10 @@ extension FileListViewController: NSTableViewDelegate {
                 if !uploadCancelled {
                     if failedFiles.isEmpty {
                         // All files uploaded successfully
-                        self.refresh()
+                        strongSelf.refresh()
                     } else {
-                        self.showError("Failed to upload \(failedFiles.count) files:\n\(failedFiles.joined(separator: "\n"))")
-                        self.refresh() // Refresh anyway to show what was uploaded
+                        strongSelf.showError("Failed to upload \(failedFiles.count) files:\n\(failedFiles.joined(separator: "\n"))")
+                        strongSelf.refresh() // Refresh anyway to show what was uploaded
                     }
                 }
             }

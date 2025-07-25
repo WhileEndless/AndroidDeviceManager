@@ -1,7 +1,7 @@
 # File Manager Features
 
 ## Overview
-The File Manager is a comprehensive file browsing and management tool for Android devices, integrated into Android Device Manager v1.1.0. It provides a native macOS interface for navigating, managing, and transferring files on Android devices via ADB.
+The File Manager is a comprehensive file browsing and management tool for Android devices, integrated into Android Device Manager v1.2.1. It provides a native macOS interface for navigating, managing, and transferring files on Android devices via ADB.
 
 ## Key Features
 
@@ -71,6 +71,7 @@ The File Manager is a comprehensive file browsing and management tool for Androi
 - Navigation buttons (Back, Forward, Up, Home)
 - Editable path field
 - Search field with instant filtering
+- Open in Terminal button
 - Refresh button
 - Progress indicator
 
@@ -89,7 +90,13 @@ The File Manager is a comprehensive file browsing and management tool for Androi
   - /data/app
   - /data/local
 
-### 7. Preferences Integration
+### 7. Terminal Integration
+- **Open in Terminal** button for quick shell access
+- Opens ADB shell in current directory
+- Automatic root switching for protected directories
+- Supports paths with spaces and special characters
+
+### 8. Preferences Integration
 - Configurable download directory
 - Settings persist across sessions
 - Available in Preferences window

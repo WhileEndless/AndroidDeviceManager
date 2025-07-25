@@ -9,7 +9,7 @@ This document defines the software requirements for the Android Device Manager a
 #### 1.2 Scope
 **Product Name:** Android Device Manager for macOS  
 **Product Code:** ADM-MAC  
-**Version:** 1.0.1
+**Version:** 1.2.1
 
 The application will be developed as a system utility running in the macOS menu bar.
 
@@ -190,4 +190,6 @@ The application will be a standalone desktop application running on macOS. It wi
 
 #### 7.2 Version History
 - v1.0.0 - Initial release (2025-01-20)
+- v1.2.1 - Terminal integration and File Manager enhancements (2025-01-25)
+- v1.1.0 - Comprehensive File Manager with advanced features (2025-01-25)
 - v1.0.1 - Performance improvements and bug fixes (2025-01-25)

@@ -1,7 +1,7 @@
 # Development Roadmap
 ## Android Device Manager for macOS
 
-### Project Status: v1.1.0 Released
+### Project Status: v1.2.1 Released
 
 ## Completed Features
 
@@ -91,6 +91,13 @@
 - [ ] Window position memory
 
 ## Release History
+
+### v1.2.1 (2025-01-25)
+- Added "Open in Terminal" button to File Manager
+- Terminal opens in current directory with root support
+- Fixed root file upload using temporary location mechanism
+- Support for paths with spaces and special characters
+- Fixed Swift compilation errors and weak self references
 
 ### v1.1.0 (2025-01-25)
 - Added comprehensive File Manager with root support
