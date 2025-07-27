@@ -26,9 +26,9 @@ Check your Info.plist file and add the necessary information:
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.2.1</string>
+    <string>1.3.0</string>
     <key>CFBundleVersion</key>
-    <string>121</string>
+    <string>130</string>
     <key>LSMinimumSystemVersion</key>
     <string>10.14</string>
     <key>LSUIElement</key>
@@ -248,7 +248,7 @@ open AndroidDeviceManager.dmg
 Create a Homebrew formula:
 ```ruby
 cask "android-device-manager" do
-  version "1.2.1"
+  version "1.3.0"
   sha256 "SHA256_HASH"
   
   url "https://github.com/WhileEndless/android-device-manager/releases/download/v#{version}/AndroidDeviceManager.dmg"

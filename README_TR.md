@@ -3,7 +3,7 @@
 ADB (Android Debug Bridge) aracılığıyla Android cihazları yönetmek için güçlü bir macOS menü çubuğu uygulaması.
 
 ## Versiyon
-**Güncel Versiyon:** 1.2.1
+**Güncel Versiyon:** 1.3.0
 
 ## Özellikler
 
@@ -59,6 +59,16 @@ ADB (Android Debug Bridge) aracılığıyla Android cihazları yönetmek için g
 - 🔗 **Sembolik Bağlantı Desteği**: Sembolik linkler üzerinden sorunsuz gezinti
 - 🖥️ **Terminal'de Aç**: Tek tıkla mevcut dizinde ADB shell başlatın
 
+#### Uygulama Yöneticisi
+- 📱 **Uygulama Listesi**: Tüm yüklü uygulamaları arama özelliğiyle görüntüleyin
+- 🔍 **Akıllı Arama**: Paket adı veya uygulama adına göre filtreleme
+- 📦 **APK Dışa Aktarma**: Tek tıkla APK dosyalarını çıkarın
+- 🔀 **Split APK Desteği**: Modern Android uygulama paketlerini doğru şekilde işler
+- 📂 **Doğrudan Dosya Erişimi**: Uygulama veri dizinini Dosya Yöneticisi'nde açın
+- ⚡ **Hızlı Yükleme**: Hızlı uygulama listesi için optimize edilmiş
+- 🎯 **Sistem Uygulamaları**: Sistem uygulamalarını göster/gizle
+
+
 ### Kullanıcı Arayüzü
 - 🎨 Temiz, yerel macOS arayüzü
 - 📱 Detaylı özelliklerle cihaz bilgi penceresi
@@ -97,6 +107,7 @@ swift build -c release
 - **Cmd+V**: Panoyu Cihaza Gönder
 - **Cmd+T**: Terminal Aç
 - **Cmd+F**: Dosya Yöneticisini Aç
+- **Cmd+A**: Uygulama Yöneticisini Aç
 - **Cmd+R**: Cihazları Yenile
 - **Cmd+,**: Tercihleri Aç
 - **Cmd+Q**: Çıkış

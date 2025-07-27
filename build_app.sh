@@ -11,7 +11,7 @@ NC='\033[0m' # No Color
 
 APP_NAME="Android Device Manager"
 BUNDLE_ID="com.androiddevicemanager.macos"
-VERSION="1.2.1"
+VERSION="1.3.0"
 
 echo -e "${GREEN}=== Building $APP_NAME v$VERSION ===${NC}"
 
@@ -61,7 +61,7 @@ cat > "$APP_NAME.app/Contents/Info.plist" << EOF
     <key>CFBundleShortVersionString</key>
     <string>$VERSION</string>
     <key>CFBundleVersion</key>
-    <string>1</string>
+    <string>130</string>
     <key>LSMinimumSystemVersion</key>
     <string>10.15</string>
     <key>LSUIElement</key>

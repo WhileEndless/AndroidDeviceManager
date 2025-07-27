@@ -96,3 +96,5 @@ Screenshots/
 logs/
 *.log
 create_clean_dmg.sh
+.claude
+.claude/

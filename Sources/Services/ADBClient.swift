@@ -209,7 +209,20 @@ class ADBClient {
     }
     
     func pull(remotePath: String, localPath: String, deviceId: String) -> CommandResult {
-        return executeCommand(args: ["pull", remotePath, localPath], deviceId: deviceId)
+        print("[ADBClient] Pulling file:")
+        print("[ADBClient]   From: \(remotePath)")
+        print("[ADBClient]   To: \(localPath)")
+        print("[ADBClient]   Device: \(deviceId)")
+        
+        let result = executeCommand(args: ["pull", remotePath, localPath], deviceId: deviceId)
+        
+        print("[ADBClient] Pull result:")
+        print("[ADBClient]   Success: \(result.isSuccess)")
+        print("[ADBClient]   Output: \(result.output.trimmingCharacters(in: .whitespacesAndNewlines))")
+        print("[ADBClient]   Error: \(result.error.trimmingCharacters(in: .whitespacesAndNewlines))")
+        print("[ADBClient]   Exit code: \(result.exitCode)")
+        
+        return result
     }
     
     func forward(localPort: Int, remotePort: Int, deviceId: String) -> CommandResult {
@@ -319,6 +332,86 @@ class ADBClient {
     func clearLogcat(deviceId: String) -> CommandResult {
         return executeCommand(args: ["logcat", "-c"], deviceId: deviceId)
     }
+    
+    func listPackages(deviceId: String, includeSystemApps: Bool = true) -> [String] {
+        let args = includeSystemApps ? "" : "-3"
+        let result = shell(command: "pm list packages \(args)", deviceId: deviceId)
+        guard result.isSuccess else { return [] }
+        
+        return result.output
+            .split(separator: "\n")
+            .compactMap { line in
+                let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+                if trimmed.hasPrefix("package:") {
+                    return String(trimmed.dropFirst("package:".count))
+                }
+                return nil
+            }
+            .sorted()
+    }
+    
+    func getPackagePath(packageName: String, deviceId: String) -> [String] {
+        let result = shell(command: "pm path \(packageName)", deviceId: deviceId)
+        guard result.isSuccess else { return [] }
+        
+        return result.output
+            .split(separator: "\n")
+            .compactMap { line in
+                let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+                if trimmed.hasPrefix("package:") {
+                    return String(trimmed.dropFirst("package:".count))
+                }
+                return nil
+            }
+    }
+    
+    func getPackageInfo(packageName: String, deviceId: String) -> (appName: String, versionName: String, versionCode: String)? {
+        let result = shell(command: "dumpsys package \(packageName) | grep -E 'versionCode|versionName|userId'", deviceId: deviceId)
+        guard result.isSuccess else { return nil }
+        
+        var versionName = ""
+        var versionCode = ""
+        
+        let lines = result.output.split(separator: "\n")
+        for line in lines {
+            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmed.contains("versionCode=") {
+                // Extract versionCode value
+                if let range = trimmed.range(of: "versionCode=") {
+                    let startIndex = trimmed.index(range.upperBound, offsetBy: 0)
+                    let remaining = String(trimmed[startIndex...])
+                    let versionCodeValue = remaining.split(separator: " ").first ?? ""
+                    versionCode = String(versionCodeValue)
+                }
+            } else if trimmed.contains("versionName=") {
+                // Extract versionName value
+                if let range = trimmed.range(of: "versionName=") {
+                    let startIndex = trimmed.index(range.upperBound, offsetBy: 0)
+                    let remaining = String(trimmed[startIndex...])
+                    let versionNameValue = remaining.split(separator: " ").first ?? ""
+                    versionName = String(versionNameValue)
+                }
+            }
+        }
+        
+        // Try to get app label
+        let _ = shell(command: "cmd package list packages -f | grep \(packageName)", deviceId: deviceId)
+        var appName = packageName
+        
+        // Try to get the actual app name from dumpsys
+        let appInfoResult = shell(command: "dumpsys package \(packageName) | grep -A1 'labelRes'", deviceId: deviceId)
+        if appInfoResult.isSuccess && appInfoResult.output.contains("labelRes") {
+            // For now, use package name as app name
+            // Getting actual app label would require parsing resources which is complex
+            appName = packageName.split(separator: ".").last.map(String.init) ?? packageName
+        }
+        
+        return (appName, versionName, versionCode)
+    }
+    
+    func pullFile(remotePath: String, localPath: String, deviceId: String) -> CommandResult {
+        return pull(remotePath: remotePath, localPath: localPath, deviceId: deviceId)
+    }
 }
 
 class ProcessRunner {
@@ -334,7 +427,10 @@ class ProcessRunner {
         process.standardError = errorPipe
         
         // Debug log
-        print("ProcessRunner executing: \(command) \(arguments.joined(separator: " "))")
+        print("[ProcessRunner] Executing command:")
+        print("[ProcessRunner]   Path: \(command)")
+        print("[ProcessRunner]   Args: \(arguments.joined(separator: " "))")
+        print("[ProcessRunner]   Full: \(command) \(arguments.joined(separator: " "))")
         
         do {
             try process.run()

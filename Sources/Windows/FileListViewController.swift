@@ -46,9 +46,12 @@ class FileListViewController: NSViewController {
     private let searchField = NSSearchField()
     
     // MARK: - Init
-    init(device: Device, adbClient: ADBClient) {
+    init(device: Device, adbClient: ADBClient, initialPath: String? = nil) {
         self.device = device
         self.adbClient = adbClient
+        if let initialPath = initialPath {
+            self.currentPath = initialPath
+        }
         super.init(nibName: nil, bundle: nil)
     }
     

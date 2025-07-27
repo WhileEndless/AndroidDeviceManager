@@ -1,7 +1,7 @@
 # Development Roadmap
 ## Android Device Manager for macOS
 
-### Project Status: v1.2.1 Released
+### Project Status: v1.3.0 Released
 
 ## Completed Features
 
@@ -78,12 +78,21 @@
 - Navigation history (back/forward)
 - Symlink support
 
+### App Manager 
+- View all installed applications
+- Smart search by package name or app name
+- APK export with single click
+- Split APK support for app bundles
+- Direct file access (open app data in File Manager)
+- Optimized for fast loading
+- System apps toggle
+
 ## Future Enhancements (v1.2+)
 
 ### Enhanced Features
 - [ ] WiFi ADB connection management
 - [ ] Device screen recording
-- [ ] App management (install/uninstall/backup)
+- [x] App management (install/uninstall/backup) - Partially completed in v1.3.0
 
 ### UI/UX Improvements
 - [ ] Dark mode enhancements
@@ -91,6 +100,15 @@
 - [ ] Window position memory
 
 ## Release History
+
+### v1.3.0 (2025-01-27)
+- Added comprehensive App Manager
+- View and search installed applications
+- Export APK files with single click
+- Split APK support for modern app bundles
+- Open app data directory in File Manager
+- Optimized app listing for performance
+- System apps toggle functionality
 
 ### v1.2.1 (2025-01-25)
 - Added "Open in Terminal" button to File Manager

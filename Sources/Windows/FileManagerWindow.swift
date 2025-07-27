@@ -12,7 +12,7 @@ class FileManagerWindow: NSWindowController {
     private let device: Device
     private let adbClient: ADBClient
     
-    init(device: Device, adbClient: ADBClient) {
+    init(device: Device, adbClient: ADBClient, initialPath: String? = nil) {
         self.device = device
         self.adbClient = adbClient
         
@@ -29,7 +29,7 @@ class FileManagerWindow: NSWindowController {
         super.init(window: window)
         
         // Set up content view controller
-        let contentVC = FileListViewController(device: device, adbClient: adbClient)
+        let contentVC = FileListViewController(device: device, adbClient: adbClient, initialPath: initialPath)
         window.contentViewController = contentVC
         
         // Center window

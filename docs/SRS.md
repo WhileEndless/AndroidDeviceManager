@@ -9,7 +9,7 @@ This document defines the software requirements for the Android Device Manager a
 #### 1.2 Scope
 **Product Name:** Android Device Manager for macOS  
 **Product Code:** ADM-MAC  
-**Version:** 1.2.1
+**Version:** 1.3.0
 
 The application will be developed as a system utility running in the macOS menu bar.
 
@@ -32,6 +32,8 @@ The application will be a standalone desktop application running on macOS. It wi
 - Frida server management (root required)
 - Logcat viewing and filtering
 - Device information display and export
+- File manager with root support
+- App manager with APK export
 
 #### 2.3 User Characteristics
 - Android developers
@@ -99,6 +101,25 @@ The application will be a standalone desktop application running on macOS. It wi
 - **FR-8.2:** The system shall show system information
 - **FR-8.3:** The system shall display hardware details
 - **FR-8.4:** The system shall provide export functionality
+
+##### FR-9: File Manager
+- **FR-9.1:** The system shall navigate Android filesystem with root support
+- **FR-9.2:** The system shall support drag & drop file upload
+- **FR-9.3:** The system shall download multiple files with batch operations
+- **FR-9.4:** The system shall provide file operations (rename, delete)
+- **FR-9.5:** The system shall support real-time search
+- **FR-9.6:** The system shall handle SQLite database files
+- **FR-9.7:** The system shall maintain navigation history
+- **FR-9.8:** The system shall support symlinks
+
+##### FR-10: App Manager
+- **FR-10.1:** The system shall list all installed applications
+- **FR-10.2:** The system shall search apps by package/app name
+- **FR-10.3:** The system shall export APK files
+- **FR-10.4:** The system shall handle split APK bundles
+- **FR-10.5:** The system shall open app data in File Manager
+- **FR-10.6:** The system shall toggle system apps visibility
+- **FR-10.7:** The system shall optimize app listing performance
 
 #### 3.2 Non-Functional Requirements
 
@@ -190,6 +211,7 @@ The application will be a standalone desktop application running on macOS. It wi
 
 #### 7.2 Version History
 - v1.0.0 - Initial release (2025-01-20)
-- v1.2.1 - Terminal integration and File Manager enhancements (2025-01-25)
-- v1.1.0 - Comprehensive File Manager with advanced features (2025-01-25)
 - v1.0.1 - Performance improvements and bug fixes (2025-01-25)
+- v1.1.0 - Comprehensive File Manager with advanced features (2025-01-25)
+- v1.3.0 - App Manager with APK export (2025-01-27)
+- v1.2.1 - Terminal integration and File Manager enhancements (2025-01-25)

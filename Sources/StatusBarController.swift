@@ -13,6 +13,7 @@ class StatusBarController {
     private var deviceInfoWindow: DeviceInfoWindow?
     private var aboutWindow: AboutWindow?
     private var fileManagerWindow: FileManagerWindow?
+    private var appManagerWindow: AppManagerWindow?
     
     init() {
         statusBar = NSStatusBar.system
@@ -168,6 +169,7 @@ class StatusBarController {
         
         // Direct menu items
         menu.addItem(createMenuItem(title: "📁 File Manager...", action: #selector(showFileManager), keyEquivalent: "f", enabled: hasActiveDevice))
+        menu.addItem(createMenuItem(title: "📱 App Manager...", action: #selector(showAppManager), keyEquivalent: "a", enabled: hasActiveDevice))
         menu.addItem(createMenuItem(title: "🔀 Port Forwarding...", action: #selector(showPortForwarding), keyEquivalent: "", enabled: hasActiveDevice))
         
         // Frida requires root
@@ -355,6 +357,19 @@ class StatusBarController {
         fileManagerWindow?.window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
+    
+    @objc private func showAppManager() {
+        guard let device = deviceManager.activeDevice else {
+            showNotification(title: "Error", message: "No active device")
+            return
+        }
+        
+        appManagerWindow = AppManagerWindow(device: device)
+        appManagerWindow?.showWindow(nil)
+        appManagerWindow?.window?.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+    
     
     @objc private func showPortForwarding() {
         guard let device = deviceManager.activeDevice else {
